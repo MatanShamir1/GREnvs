@@ -1,0 +1,6 @@
+# Additions not in minigrid:
+from gr_envs.minigrid_scripts.envs.dynamic_goal_crossing import DynamicGoalCrossingEnv
+from gr_envs.minigrid_scripts.envs.dynamic_goal_crossing_custom import DynamicGoalCrossingCustom13Env
+from gr_envs.minigrid_scripts.envs.custom_color import CustomColorEnv
+from gr_envs.minigrid_scripts.envs.dynamic_goal_empty import DynamicGoalEmpty
+from gr_envs.minigrid_scripts.envs.dynamic_four_rooms import DynamicFourRoomsEnv

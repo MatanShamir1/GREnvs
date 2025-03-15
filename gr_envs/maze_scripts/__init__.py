@@ -1,6 +1,6 @@
 import gymnasium
 from gymnasium.envs.registration import register
-from gr_libs.maze_scripts.envs.maze.generate_maze import gen_empty_env, gen_four_rooms_env, gen_maze_with_obstacles
+from gr_envs.maze_scripts.envs.maze.generate_maze import gen_empty_env, gen_four_rooms_env, gen_maze_with_obstacles
 from gymnasium_robotics.core import GoalEnv
 from gymnasium_robotics.envs.maze import maps
 

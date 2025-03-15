@@ -1,10 +1,9 @@
 from setuptools import setup, find_packages
-import versioneer
 
 setup(
-    name='gr_libs',  # Replace with your package name
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
+    name='gr_envs',  # Replace with your package name
+    use_scm_version=True,
+	setup_requires=["setuptools_scm"],
     packages=find_packages(),
     # entry_points={
     #     "gymnasium.envs": ["__root__ = gr_libs.minigrid_scripts.__init__:register_minigrid_envs"]
