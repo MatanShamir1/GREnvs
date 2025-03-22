@@ -14,6 +14,16 @@ Installing the repo registers the environments to gym, effectively enabling you 
 
 If you're on windows and using vscode, you will need Microsoft Visual C++ 14.0 or greater. you can download a latest version here: https://visualstudio.microsoft.com/visual-cpp-build-tools/
 
+## Supported envs:
+
+### Minigrid
+
+### Panda
+
+### Parking
+
+### Point-Maze
+
 ## Contributing
 Contributions are welcome! Please feel free to submit a pull request or open an issue if you have any suggestions or improvements.
 
