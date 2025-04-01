@@ -9,27 +9,24 @@ dynamic = ["version"]  # Version managed dynamically by setuptools_scm
 description = "Package to receive goal-directed environments"
 authors = [
     {name = "Matan Shamir", email = "matan.shamir@live.biu.ac.il"},
-    {name = "Osher Elhadad"},
+    {name = "Osher Elhadad", email = "osher.elhadad@live.biu.ac.il"},
     {name = "Ben Nageris"}
 ]
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "minigrid",
-    "highway-env",
-    "tensorboardX",
-    "torchvision",
-    "panda_gym",
-    "rl_zoo3",
-    "gymnasium",
-    "gymnasium-robotics",
-    "stable_baselines3[extra]",
-    "sb3_contrib"
+    "gymnasium"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent"
 ]
+
+[project.optional-dependencies]
+minigrid = ["minigrid"]
+highway = ["highway-env"]
+maze = ["gymnasium-robotics"]
+panda = ["panda_gym"]
 
 [tool.setuptools]
 packages = {find = {}}
