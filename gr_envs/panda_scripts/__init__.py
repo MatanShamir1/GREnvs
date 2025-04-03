@@ -55,7 +55,7 @@ for reward_type in ["sparse", "dense"]:
 
         register(
             id="PandaMyReach{}{}-v3".format(control_suffix, reward_suffix),
-            entry_point="gr_libs.panda_gym_scripts.envs:PandaMyReachEnv",
+            entry_point="gr_envs.panda_scripts.envs:PandaMyReachEnv",
             kwargs={**kwargs, "goal_range_negative": -0.5, "goal_range_positive": 0.2},
             max_episode_steps=101,
         )
@@ -73,7 +73,7 @@ for goal in goals:
     #print(f"{goal}:{env_id}")
     register(
         id=env_id,
-        entry_point="gr_libs.panda_gym_scripts.envs:PandaMyReachEnv",
+        entry_point="gr_envs.panda_scripts.envs:PandaMyReachEnv",
         kwargs=kwargs,
         max_episode_steps=101, 
     )

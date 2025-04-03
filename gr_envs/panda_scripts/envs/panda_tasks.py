@@ -6,14 +6,14 @@ import numpy as np
 from panda_gym.envs.core import RobotTaskEnv
 from panda_gym.envs.robots.panda import Panda
 
-from gr_envs.panda_gym_scripts.envs.robots.my_panda import MyPanda
+from gr_envs.panda_scripts.envs.robots.my_panda import MyPanda
 
 from panda_gym.envs.tasks.flip import Flip
 from panda_gym.envs.tasks.pick_and_place import PickAndPlace
 from panda_gym.envs.tasks.push import Push
 from panda_gym.envs.tasks.reach import Reach
 
-from gr_envs.panda_gym_scripts.envs.tasks.my_reach import MyReach
+from gr_envs.panda_scripts.envs.tasks.my_reach import MyReach
 
 from panda_gym.envs.tasks.slide import Slide
 from panda_gym.envs.tasks.stack import Stack

@@ -1,4 +1,4 @@
-from gr_envs.panda_gym_scripts.envs.panda_tasks import (
+from gr_envs.panda_scripts.envs.panda_tasks import (
     PandaFlipEnv,
     PandaPickAndPlaceEnv,
     PandaPushEnv,
