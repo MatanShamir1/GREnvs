@@ -9,16 +9,6 @@ except ImportError:
     pass
 
 try:
-    import gr_envs.panda_scripts
-except ImportError:
-    pass
-
-try:
-    import gr_envs.highway_scripts
-except ImportError:
-    pass
-
-try:
     import gr_envs.maze_scripts
 except ImportError:
     pass
