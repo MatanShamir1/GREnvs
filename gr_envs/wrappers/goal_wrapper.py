@@ -1,9 +1,15 @@
-from abc import abstractmethod
-from stable_baselines3.common.vec_env import DummyVecEnv
+from __future__ import annotations
 import gymnasium
-import panda_gym
+
+class Goal:
+	def get(self) -> int:
+		raise NotImplementedError()
+
+	def reset(self) -> None:
+		raise NotImplementedError()
 
 class GoalRecognitionWrapper(gymnasium.Wrapper):
-	def __init__(self, env: gymnasium.Env, name: str):
+	def __init__(self, env: gymnasium.Env, name: str, goal: Goal):
 		super().__init__(env)
 		self.name = name
+		self.goal = goal
