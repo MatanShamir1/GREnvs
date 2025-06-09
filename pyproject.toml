@@ -38,4 +38,7 @@ packages = {find = {}}
 [tool.setuptools_scm]
 version_scheme = "post-release"
 local_scheme = "node-and-date"
+# version_scheme = "no-guess-dev"
+# local_scheme = "dirty-tag"
 write_to = "gr_envs/_version.py"  # This line writes the version to a file within the package
+fallback_version = "0.1.7.post1"
