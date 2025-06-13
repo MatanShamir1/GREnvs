@@ -305,7 +305,8 @@ def make_point_maze_wrapped(**kwargs):
                 capitalized_maze_type = "".join(
                     [part.capitalize() for part in maze_type.split("_")]
                 )
-                env_id = f"PointMaze-{capitalized_maze_type}Env-{width}x{height}-GoalConditioned"
+                suffix = "Dense" if reward_type == "dense" else ""
+                env_id = f"PointMaze-{capitalized_maze_type}Env{suffix}-{width}x{height}-GoalConditioned"
                 env = gymnasium.make(env_id, **remaining_kwargs)
             except (NameNotFound, KeyError):
                 print(
