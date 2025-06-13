@@ -6,7 +6,7 @@ from gymnasium.envs.registration import register
 from gymnasium.error import NameNotFound
 
 from gr_envs.wrappers.goal_wrapper import GoalRecognitionWrapper, Goal
-from gr_envs.env_registration.point_maze_register import (
+from GREnvs.gr_envs.env_registration.maze_register import (
     gen_empty_env,
     gen_four_rooms_env,
     gen_maze_with_obstacles,

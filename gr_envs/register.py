@@ -1,6 +1,6 @@
-from gr_envs.env_registration.panda_gym_register import panda_gym_register
-from gr_envs.env_registration.highway_env_register import register_highway_envs
-from gr_envs.env_registration.point_maze_register import point_maze_register
+from gr_envs.env_registration.panda_register import panda_gym_register
+from gr_envs.env_registration.highway_register import register_highway_envs
+from gr_envs.env_registration.maze_register import point_maze_register
 
 
 def register_all_envs():
