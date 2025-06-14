@@ -12,8 +12,3 @@ try:
     import gr_envs.minigrid_scripts
 except ImportError:
     pass
-
-try:
-    import gr_envs.maze_scripts
-except ImportError:
-    pass
