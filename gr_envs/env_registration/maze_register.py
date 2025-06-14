@@ -1,9 +1,9 @@
-import gymnasium as gym
+import gymnasium
 from gymnasium.envs.registration import register, registry
-from gymnasium.envs.registration import registry
 
-from gr_envs.wrappers.point_maze_wrapper import PointMazeWrapper, PointMazeGoalList
 from gr_envs.wrappers.point_maze_wrapper import (
+    PointMazeWrapper,
+    PointMazeGoalList,
     gen_empty_env,
     gen_four_rooms_env,
     gen_maze_with_obstacles,
@@ -11,27 +11,88 @@ from gr_envs.wrappers.point_maze_wrapper import (
 
 
 def make_point_maze_wrapped_env(**kwargs):
-    """
-    Factory function to be used as entry_point in register calls.
-    Creates a point maze environment and wraps it with PointMazeWrapper.
-    """
-    # Extract goal parameter if provided
+    """Factory function for creating a wrapped point maze environment."""
+    # Extract maze parameters
+    maze_type = kwargs.pop("maze_type", "empty")
+    env_id = kwargs.pop("env_id", "PointMazeEnv")
+    entry_point = kwargs.pop(
+        "entry_point", "gymnasium_robotics.envs.maze.point_maze:PointMazeEnv"
+    )
+    width = kwargs.pop("width", 11)
+    height = kwargs.pop("height", 11)
+    initial_states = kwargs.pop("initial_states", [(1, 1)])
+    reward_type = kwargs.pop("reward_type", "sparse")
+    continuing_task = kwargs.pop("continuing_task", False)
+    max_episode_steps = kwargs.pop("max_episode_steps", 900)
+    render_mode = kwargs.pop("render_mode", None)
+
+    # Extract goal parameters
     goal_state = kwargs.pop("goal_state", None)  # Single goal state
     goal_states = kwargs.pop("goal_states", None)  # Multiple goal states
 
-    # Extract the base environment ID parameter
-    base_env_id = kwargs.pop("base_env_id")
+    # Default obstacles for obstacle maze type
+    default_obstacles = [
+        (2, 2),
+        (2, 3),
+        (2, 4),
+        (3, 2),
+        (3, 3),
+        (3, 4),
+        (4, 2),
+        (4, 3),
+        (4, 4),
+    ]
+    obstacles = kwargs.pop("obstacles", default_obstacles)
+
+    # Determine maze generation function based on maze type
+    if maze_type == "empty":
+        maze_map_func = gen_empty_env
+    elif maze_type == "four_rooms":
+        maze_map_func = gen_four_rooms_env
+    elif maze_type == "obstacles":
+        maze_map_func = gen_maze_with_obstacles
+    else:
+        raise ValueError(f"Unknown maze type: {maze_type}")
+
+    # Create goal list from provided goals
+    if goal_states is not None:
+        all_goals = goal_states
+    elif goal_state is not None:
+        all_goals = [goal_state]
+    else:
+        all_goals = [(9, 9)]  # Default goal if none specified
+
+    # Generate maze map
+    if maze_type == "obstacles":
+        maze_map = maze_map_func(width, height, initial_states, all_goals, obstacles)
+    else:
+        maze_map = maze_map_func(width, height, initial_states, all_goals)
+
+    # Create environment kwargs
+    env_kwargs = {
+        "reward_type": reward_type,
+        "maze_map": maze_map,
+        "continuing_task": continuing_task,
+    }
+
+    if render_mode:
+        env_kwargs["render_mode"] = render_mode
+
+    register(
+        id=f"Base{env_id}",
+        entry_point=entry_point,
+        kwargs=env_kwargs,
+        max_episode_steps=max_episode_steps,
+    )
 
     # Create the base environment
-    env = gym.make(base_env_id, **kwargs)
+    env = gymnasium.make(
+        f"Base{env_id}",
+        **env_kwargs,
+    )
 
-    # Create goal list based on what was provided
-    if goal_states is not None:
-        goals = PointMazeGoalList(goal_states)
-    elif goal_state is not None:
-        goals = PointMazeGoalList([goal_state])
-    else:
-        goals = None
+    # Create goal list for the wrapper
+    goals = PointMazeGoalList(all_goals)
 
     # Wrap the environment
     return PointMazeWrapper(env=env, goal=goals)
@@ -45,25 +106,6 @@ def point_maze_register():
         for width, height in [(11, 11)]:
             for start_x, start_y in [(1, 1)]:
                 # Register Four Rooms with multiple goals
-                base_env_id = f"PointMazeBase-FourRoomsEnv{suffix}-{width}x{height}-Goals-9x1-1x9-9x9"
-                if base_env_id not in registry:
-                    register(
-                        id=base_env_id,
-                        entry_point="gymnasium_robotics.envs.maze.point_maze:PointMazeEnv",
-                        kwargs={
-                            "reward_type": reward_type,
-                            "maze_map": gen_four_rooms_env(
-                                width,
-                                height,
-                                [(start_x, start_y)],
-                                [(1, 9), (9, 1), (9, 9)],
-                            ),
-                            "continuing_task": False,
-                        },
-                        max_episode_steps=900,
-                    )
-
-                # Register wrapped version
                 env_id = (
                     f"PointMaze-FourRoomsEnv{suffix}-{width}x{height}-Goals-9x1-1x9-9x9"
                 )
@@ -72,8 +114,15 @@ def point_maze_register():
                         id=env_id,
                         entry_point=make_point_maze_wrapped_env,
                         kwargs={
-                            "base_env_id": base_env_id,
+                            "env_id": env_id,
+                            "entry_point": "gymnasium_robotics.envs.maze.point_maze:PointMazeEnv",
+                            "maze_type": "four_rooms",
+                            "width": width,
+                            "height": height,
+                            "initial_states": [(start_x, start_y)],
                             "goal_states": [(1, 9), (9, 1), (9, 9)],
+                            "reward_type": reward_type,
+                            "continuing_task": False,
                         },
                         max_episode_steps=900,
                     )
@@ -105,103 +154,73 @@ def point_maze_register():
                 (2, 8),
                 (4, 3),
             ]:
-                # Register base Empty environment
-                base_env_id = f"PointMazeBase-EmptyEnv{suffix}-{width}x{height}-Goal-{goal_x}x{goal_y}"
-                if base_env_id not in registry:
-                    register(
-                        id=base_env_id,
-                        entry_point="gymnasium_robotics.envs.maze.point_maze:PointMazeEnv",
-                        kwargs={
-                            "reward_type": reward_type,
-                            "maze_map": gen_empty_env(
-                                width, height, [(start_x, start_y)], [(goal_x, goal_y)]
-                            ),
-                            "continuing_task": False,
-                        },
-                        max_episode_steps=900,
-                    )
-
-                # Register wrapped Empty environment
+                # Register Empty environment
                 env_id = f"PointMaze-EmptyEnv{suffix}-{width}x{height}-Goal-{goal_x}x{goal_y}"
                 if env_id not in registry:
                     register(
                         id=env_id,
                         entry_point=make_point_maze_wrapped_env,
                         kwargs={
-                            "base_env_id": base_env_id,
+                            "maze_type": "empty",
+                            "env_id": env_id,
+                            "entry_point": "gymnasium_robotics.envs.maze.point_maze:PointMazeEnv",
+                            "width": width,
+                            "height": height,
+                            "initial_states": [(start_x, start_y)],
                             "goal_state": (goal_x, goal_y),
-                        },
-                        max_episode_steps=900,
-                    )
-
-                # Register base Four Rooms environment
-                base_env_id = f"PointMazeBase-FourRoomsEnv{suffix}-{width}x{height}-Goal-{goal_x}x{goal_y}"
-                if base_env_id not in registry:
-                    register(
-                        id=base_env_id,
-                        entry_point="gymnasium_robotics.envs.maze.point_maze:PointMazeEnv",
-                        kwargs={
                             "reward_type": reward_type,
-                            "maze_map": gen_four_rooms_env(
-                                width, height, [(start_x, start_y)], [(goal_x, goal_y)]
-                            ),
                             "continuing_task": False,
                         },
                         max_episode_steps=900,
                     )
 
-                # Register wrapped Four Rooms environment
+                # Register Four Rooms environment
                 env_id = f"PointMaze-FourRoomsEnv{suffix}-{width}x{height}-Goal-{goal_x}x{goal_y}"
                 if env_id not in registry:
                     register(
                         id=env_id,
                         entry_point=make_point_maze_wrapped_env,
                         kwargs={
-                            "base_env_id": base_env_id,
+                            "maze_type": "four_rooms",
+                            "env_id": env_id,
+                            "entry_point": "gymnasium_robotics.envs.maze.point_maze:PointMazeEnv",
+                            "width": width,
+                            "height": height,
+                            "initial_states": [(start_x, start_y)],
                             "goal_state": (goal_x, goal_y),
-                        },
-                        max_episode_steps=900,
-                    )
-
-                # Register base Obstacles environment
-                base_env_id = f"PointMazeBase-ObstaclesEnv{suffix}-{width}x{height}-Goal-{goal_x}x{goal_y}"
-                if base_env_id not in registry:
-                    register(
-                        id=base_env_id,
-                        entry_point="gymnasium_robotics.envs.maze.point_maze:PointMazeEnv",
-                        kwargs={
                             "reward_type": reward_type,
-                            "maze_map": gen_maze_with_obstacles(
-                                width,
-                                height,
-                                [(start_x, start_y)],
-                                [(goal_x, goal_y)],
-                                [
-                                    (2, 2),
-                                    (2, 3),
-                                    (2, 4),
-                                    (3, 2),
-                                    (3, 3),
-                                    (3, 4),
-                                    (4, 2),
-                                    (4, 3),
-                                    (4, 4),
-                                ],
-                            ),
                             "continuing_task": False,
                         },
                         max_episode_steps=900,
                     )
 
-                # Register wrapped Obstacles environment
+                # Register Obstacles environment
                 env_id = f"PointMaze-ObstaclesEnv{suffix}-{width}x{height}-Goal-{goal_x}x{goal_y}"
                 if env_id not in registry:
                     register(
                         id=env_id,
                         entry_point=make_point_maze_wrapped_env,
                         kwargs={
-                            "base_env_id": base_env_id,
+                            "maze_type": "obstacles",
+                            "env_id": env_id,
+                            "entry_point": "gymnasium_robotics.envs.maze.point_maze:PointMazeEnv",
+                            "width": width,
+                            "height": height,
+                            "initial_states": [(start_x, start_y)],
                             "goal_state": (goal_x, goal_y),
+                            "reward_type": reward_type,
+                            "continuing_task": False,
+                            "obstacles": [
+                                (2, 2),
+                                (2, 3),
+                                (2, 4),
+                                (3, 2),
+                                (3, 3),
+                                (3, 4),
+                                (4, 2),
+                                (4, 3),
+                                (4, 4),
+                            ],
                         },
                         max_episode_steps=900,
                     )
@@ -222,12 +241,23 @@ def point_maze_register():
                     # Create a string representation of the goals for the ID
                     goal_str = "-".join([f"{g[0]}x{g[1]}" for g in goal_set])
 
-                    # Register base multi-goal environment
-                    base_env_id = f"PointMazeBase-{capitalized_maze_type}Env{suffix}-{width}x{height}-MultiGoals-{goal_str}"
-                    if base_env_id not in registry:
-                        # Generate the appropriate maze map based on type
+                    # Register multi-goal environment
+                    env_id = f"PointMaze-{capitalized_maze_type}Env{suffix}-{width}x{height}-MultiGoals-{goal_str}"
+                    if env_id not in registry:
+                        kwargs = {
+                            "maze_type": maze_type,
+                            "env_id": env_id,
+                            "entry_point": "gymnasium_robotics.envs.maze.point_maze:PointMazeEnv",
+                            "width": width,
+                            "height": height,
+                            "initial_states": [(start_x, start_y)],
+                            "goal_states": goal_set,
+                            "reward_type": reward_type,
+                            "continuing_task": False,
+                        }
+
                         if maze_type == "obstacles":
-                            obstacles_list = [
+                            kwargs["obstacles"] = [
                                 (2, 2),
                                 (2, 3),
                                 (2, 4),
@@ -238,43 +268,11 @@ def point_maze_register():
                                 (4, 3),
                                 (4, 4),
                             ]
-                            maze_map = gen_maze_with_obstacles(
-                                width,
-                                height,
-                                [(start_x, start_y)],
-                                goal_set,
-                                obstacles_list,
-                            )
-                        elif maze_type == "four_rooms":
-                            maze_map = gen_four_rooms_env(
-                                width, height, [(start_x, start_y)], goal_set
-                            )
-                        else:  # empty
-                            maze_map = gen_empty_env(
-                                width, height, [(start_x, start_y)], goal_set
-                            )
 
-                        register(
-                            id=base_env_id,
-                            entry_point="gymnasium_robotics.envs.maze.point_maze:PointMazeEnv",
-                            kwargs={
-                                "reward_type": reward_type,
-                                "maze_map": maze_map,
-                                "continuing_task": False,
-                            },
-                            max_episode_steps=900,
-                        )
-
-                    # Register wrapped multi-goal environment
-                    env_id = f"PointMaze-{capitalized_maze_type}Env{suffix}-{width}x{height}-MultiGoals-{goal_str}"
-                    if env_id not in registry:
                         register(
                             id=env_id,
                             entry_point=make_point_maze_wrapped_env,
-                            kwargs={
-                                "base_env_id": base_env_id,
-                                "goal_states": goal_set,
-                            },
+                            kwargs=kwargs,
                             max_episode_steps=900,
                         )
 
@@ -306,48 +304,28 @@ def point_maze_register():
                             continue
                         all_goal_states.append(pos)
 
-                # Register base goal-conditioned environment
-                base_env_id = f"PointMazeBase-{capitalized_maze_type}Env{suffix}-{width}x{height}-GoalConditioned"
-                if base_env_id not in registry:
-                    # Generate maze map based on type
-                    if maze_type == "obstacles":
-                        maze_map = gen_maze_with_obstacles(
-                            width,
-                            height,
-                            [(start_x, start_y)],
-                            all_goal_states,
-                            obstacles_list,
-                        )
-                    elif maze_type == "four_rooms":
-                        maze_map = gen_four_rooms_env(
-                            width, height, [(start_x, start_y)], all_goal_states
-                        )
-                    else:  # empty
-                        maze_map = gen_empty_env(
-                            width, height, [(start_x, start_y)], all_goal_states
-                        )
-
-                    register(
-                        id=base_env_id,
-                        entry_point="gymnasium_robotics.envs.maze.point_maze:PointMazeEnv",
-                        kwargs={
-                            "reward_type": reward_type,
-                            "maze_map": maze_map,
-                            "continuing_task": False,
-                        },
-                        max_episode_steps=900,
-                    )
-
-                # Register wrapped goal-conditioned environment
+                # Register goal-conditioned environment
                 env_id = f"PointMaze-{capitalized_maze_type}Env{suffix}-{width}x{height}-GoalConditioned"
                 if env_id not in registry:
+                    kwargs = {
+                        "maze_type": maze_type,
+                        "env_id": env_id,
+                        "entry_point": "gymnasium_robotics.envs.maze.point_maze:PointMazeEnv",
+                        "width": width,
+                        "height": height,
+                        "initial_states": [(start_x, start_y)],
+                        "goal_states": all_goal_states,
+                        "reward_type": reward_type,
+                        "continuing_task": True,  # Goal-conditioned environments are continuing
+                    }
+
+                    if maze_type == "obstacles":
+                        kwargs["obstacles"] = obstacles_list
+
                     register(
                         id=env_id,
                         entry_point=make_point_maze_wrapped_env,
-                        kwargs={
-                            "base_env_id": base_env_id,
-                            "goal_states": all_goal_states,
-                        },
+                        kwargs=kwargs,
                         max_episode_steps=900,
                     )
 
