@@ -100,9 +100,6 @@ def panda_gym_register():
                 (-0.05, 0.0, 0.1),
             ]
 
-            # Convert tuple goals to numpy arrays for PandaGymDesiredGoalList
-            center_goal_arrays = [np.array(g, dtype=np.float32) for g in center_goals]
-
             # Create goal space that only covers the center region
             center_goal_space = gymnasium.spaces.Box(
                 low=np.array([-0.05, -0.05, 0.1], dtype=np.float32),
@@ -127,21 +124,6 @@ def panda_gym_register():
                 },
                 max_episode_steps=101,
             )
-
-            # Register a subspace with the left-front quadrant goals only
-            left_front_goals = [
-                (-0.5, -0.5, 0.1),
-                (-0.3, -0.3, 0.1),
-                (-0.1, -0.1, 0.1),
-                (-0.4, -0.2, 0.1),
-                (-0.2, -0.4, 0.1),
-                (-0.1, -0.3, 0.1),
-                (-0.3, -0.1, 0.1),
-            ]
-
-            left_front_goal_arrays = [
-                np.array(g, dtype=np.float32) for g in left_front_goals
-            ]
 
             left_front_goal_space = gymnasium.spaces.Box(
                 low=np.array([-0.5, -0.5, 0.1], dtype=np.float32),
