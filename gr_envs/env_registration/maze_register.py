@@ -227,7 +227,7 @@ def point_maze_register():
 
             # Register additional multi-goal environments
             multi_goal_sets = [
-                [(1, 1), (9, 9), (5, 5)],  # Diagonal and center
+                [(2, 2), (9, 9), (5, 5)],  # Diagonal and center
                 [(3, 3), (3, 7), (7, 3), (7, 7)],  # Four corners of inner area
                 [(2, 2), (2, 8), (8, 2), (8, 8)],  # Four corners
             ]

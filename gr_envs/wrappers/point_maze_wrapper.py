@@ -120,6 +120,13 @@ class PointMazeGoalList(Goal):
         """Reset by sampling a new goal."""
         self.current_goal = self._sample_goal()
 
+    def is_in_subspace(self, goal: Tuple[int, int]) -> bool:
+        """Check if a goal coordinate is in the allowed list of goals"""
+        if not isinstance(goal, tuple) or len(goal) != 2:
+            return False
+
+        return goal in self.goal_states
+
 
 class PointMazeWrapper(GoalRecognitionWrapper):
     """Wrapper for Point Maze environments to support dynamic goal recognition."""
@@ -142,3 +149,9 @@ class PointMazeWrapper(GoalRecognitionWrapper):
     def goal_to_str(goal: Tuple[int, int]) -> str:
         """Convert a goal position to a string representation."""
         return f"{goal[0]}x{goal[1]}"
+
+    def is_goal_in_subspace(self, goal: Tuple[int, int]) -> bool:
+        """Check if a goal is within this wrapper's goal subspace"""
+        if self.goal is None:
+            return True
+        return self.goal.is_in_subspace(goal)

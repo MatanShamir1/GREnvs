@@ -26,6 +26,10 @@ class ParkingGoalList(Goal):
     def reset(self) -> None:
         self.goal_index = random.choice(self.goal_list)
 
+    def is_in_subspace(self, goal: str) -> bool:
+        """Check if a goal index is in the allowed list of goals"""
+        return str(goal) in [str(g) for g in self.goal_list]
+
 
 class ParkingWrapper(GoalRecognitionWrapper):
     def __init__(
@@ -116,3 +120,9 @@ class ParkingWrapper(GoalRecognitionWrapper):
             )
             v = Vehicle.make_on_lane(hooked_env.road, lane, 4, speed=0)
             hooked_env.road.vehicles.append(v)
+
+    def is_goal_in_subspace(self, goal: str) -> bool:
+        """Check if a goal is within this wrapper's goal subspace"""
+        if self.goal is None:
+            return True
+        return self.goal.is_in_subspace(goal)

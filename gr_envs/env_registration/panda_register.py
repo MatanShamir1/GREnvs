@@ -84,5 +84,87 @@ def panda_gym_register():
                     max_episode_steps=101,
                 )
 
+            # Register Panda environment with a center goal subspace (small area near the center)
+            # This is useful for GCAura algorithm that trains on a subspace but adapts to goals outside it
+            center_goals = [
+                (-0.05, -0.05, 0.1),
+                (-0.02, -0.02, 0.1),
+                (0.0, 0.0, 0.1),
+                (0.02, 0.02, 0.1),
+                (0.05, 0.05, 0.1),
+                (-0.05, 0.05, 0.1),
+                (0.05, -0.05, 0.1),
+                (0.0, 0.05, 0.1),
+                (0.0, -0.05, 0.1),
+                (0.05, 0.0, 0.1),
+                (-0.05, 0.0, 0.1),
+            ]
+
+            # Convert tuple goals to numpy arrays for PandaGymDesiredGoalList
+            center_goal_arrays = [np.array(g, dtype=np.float32) for g in center_goals]
+
+            # Create goal space that only covers the center region
+            center_goal_space = gymnasium.spaces.Box(
+                low=np.array([-0.05, -0.05, 0.1], dtype=np.float32),
+                high=np.array([0.05, 0.05, 0.1], dtype=np.float32),
+                shape=(3,),
+                dtype=np.float32,
+            )
+
+            # Register the subspace environment for center goals only
+            register(
+                id="PandaMyReach{}{}SubspaceCenterOnly-v3".format(
+                    control_suffix, reward_suffix
+                ),
+                entry_point=make_panda_wrapped,
+                kwargs={
+                    "reward_type": reward_type,
+                    "control_type": control_type,
+                    "goal": PandaGymDesiredGoalList(center_goal_space),
+                    "action_space": gymnasium.spaces.Box(
+                        low=-0.5, high=0.5, shape=(3,), dtype=np.float32
+                    ),
+                },
+                max_episode_steps=101,
+            )
+
+            # Register a subspace with the left-front quadrant goals only
+            left_front_goals = [
+                (-0.5, -0.5, 0.1),
+                (-0.3, -0.3, 0.1),
+                (-0.1, -0.1, 0.1),
+                (-0.4, -0.2, 0.1),
+                (-0.2, -0.4, 0.1),
+                (-0.1, -0.3, 0.1),
+                (-0.3, -0.1, 0.1),
+            ]
+
+            left_front_goal_arrays = [
+                np.array(g, dtype=np.float32) for g in left_front_goals
+            ]
+
+            left_front_goal_space = gymnasium.spaces.Box(
+                low=np.array([-0.5, -0.5, 0.1], dtype=np.float32),
+                high=np.array([-0.1, -0.1, 0.1], dtype=np.float32),
+                shape=(3,),
+                dtype=np.float32,
+            )
+
+            register(
+                id="PandaMyReach{}{}SubspaceLeftFront-v3".format(
+                    control_suffix, reward_suffix
+                ),
+                entry_point=make_panda_wrapped,
+                kwargs={
+                    "reward_type": reward_type,
+                    "control_type": control_type,
+                    "goal": PandaGymDesiredGoalList(left_front_goal_space),
+                    "action_space": gymnasium.spaces.Box(
+                        low=-0.5, high=0.5, shape=(3,), dtype=np.float32
+                    ),
+                },
+                max_episode_steps=101,
+            )
+
 
 panda_gym_register()
