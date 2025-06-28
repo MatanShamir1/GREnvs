@@ -89,5 +89,24 @@ def register_highway_envs():
                 disable_env_checker=True,
             )
 
+    # Goal subspace registration for parking
+    center_goal_spots = [
+        8,
+        10,
+        13,
+    ]  # Define the center goal spots for the subspace
+    register(
+        id="Parking-S-14-PC--GI-8Y10Y13-v0",
+        entry_point=make_parking_wrapped,
+        kwargs={
+            "n_spots": 14,
+            "goal": ParkingGoalList(center_goal_spots),
+            "heading": np.pi,
+            "parked_cars": (),
+        },
+        order_enforce=False,
+        disable_env_checker=True,
+    )
+
 
 register_highway_envs()

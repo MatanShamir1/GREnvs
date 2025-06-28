@@ -9,18 +9,38 @@ import numpy as np
 
 
 class PandaGymDesiredGoalList(Goal):
-    def __init__(self, goals: Box):
+    def __init__(self, goals: Box, goal_array=None):
         assert (
             type(goals) == Box
         ), "PandaGymDesiredGoalList expects a Box space for goals."
         self.goals = goals
         self.current_goal = self.goals.sample()
+        # Store explicit goal array if provided
+        self.goal_array = goal_array
 
     def get(self) -> np.ndarray:
         return self.current_goal
 
     def reset(self) -> None:
         self.current_goal = self.goals.sample()
+
+    def is_in_subspace(self, goal: np.ndarray) -> bool:
+        """Check if a goal is within the defined subspace"""
+        goal = np.asarray(goal, dtype=self.goals.dtype)
+        # First check if we have explicit goal list
+        if self.goal_array is not None:
+            return any(
+                np.allclose(goal, g, rtol=1e-2, atol=1e-2) for g in self.goal_array
+            )
+
+        # Otherwise check if it's within the Box constraints
+        goal_flat = goal.flatten()
+        return all(
+            low <= val <= high
+            for val, low, high in zip(
+                goal_flat, self.goals.low.flatten(), self.goals.high.flatten()
+            )
+        )
 
 
 class PandaGymWrapper(GoalRecognitionWrapper):
@@ -64,3 +84,9 @@ class PandaGymWrapper(GoalRecognitionWrapper):
         )
         print(f"Goal string: {goal_str}")
         return goal_str
+
+    def is_goal_in_subspace(self, goal: np.ndarray) -> bool:
+        """Check if a goal is within this wrapper's goal subspace"""
+        if self.goal is None:
+            return True
+        return self.goal.is_in_subspace(goal)
