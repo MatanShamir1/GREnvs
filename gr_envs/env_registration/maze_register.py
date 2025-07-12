@@ -305,7 +305,7 @@ def point_maze_register():
                         all_goal_states.append(pos)
 
                 # Register goal-conditioned environment
-                env_id = f"PointMaze-{capitalized_maze_type}Env{suffix}-{width}x{height}-GoalConditioned"
+                env_id = f"PointMaze-{capitalized_maze_type}Env{suffix}-{width}x{height}"
                 if env_id not in registry:
                     kwargs = {
                         "maze_type": maze_type,
