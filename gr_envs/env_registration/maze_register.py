@@ -302,6 +302,8 @@ def point_maze_register():
                         # Skip obstacles for obstacle environments
                         if maze_type == "obstacles" and pos in obstacles_list:
                             continue
+                        if x == start_x and y == start_y:
+                            continue
                         all_goal_states.append(pos)
 
                 # Register goal-conditioned environment
@@ -310,7 +312,6 @@ def point_maze_register():
                     kwargs = {
                         "maze_type": maze_type,
                         "env_id": env_id,
-                        "entry_point": "gymnasium_robotics.envs.maze.point_maze:PointMazeEnv",
                         "width": width,
                         "height": height,
                         "initial_states": [(start_x, start_y)],
