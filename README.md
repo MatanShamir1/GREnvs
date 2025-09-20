@@ -1,4 +1,4 @@
-# GREnvs
+# gr_envs
 Gym Environments adjusted to Goal Recognition tasks.
 
 ## Installation
